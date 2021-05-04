@@ -55,7 +55,6 @@ class AlienInvasion:
 
     def _check_move_mouse(self):
         if pygame.mouse.get_focused():
-        # self.ship.moving_mouse(event.pos[0])
             self.ship.moving_mouse(pygame.mouse.get_pos())
         # pos = pygame.mouse.get_pos()
         # pre = pygame.mouse.get_pressed()
@@ -64,9 +63,9 @@ class AlienInvasion:
     def _check_continuous_move(self):
         """ неприрывное нажатие клавиш """
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT]:
+        if keys[pygame.K_LEFT] or keys[pygame.K_a]:
             self.ship.moving_left()
-        elif keys[pygame.K_RIGHT]:
+        elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             self.ship.moving_right()
 
     def _update_screen(self):
@@ -82,8 +81,18 @@ class AlienInvasion:
 
     def _fire_bullet(self):
         """ создание нового  снаряда и включение его в группу bullets """
-        new_bullet = Bullet(self)
-        self.bullets.add(new_bullet)
+        if len(self.bullets) < self.settings.bullet_allowed:    # контроль лимита выстрелов
+            new_bullet = Bullet(self)
+            self.bullets.add(new_bullet)
+
+    def _update_bullets(self):
+        """ обновление позиции снарядов и уничтожение старых снарядов """
+        # обновление позиции снаряда
+        self.bullets.update()
+        # удаление снарядов вышедших за край экрана
+        for bullet in self.bullets.copy():
+            if bullet.rect.bottom <= 0:
+                self.bullets.remove(bullet)
 
     def run_game(self):
         """ запуск основного цикла игры """
@@ -91,12 +100,7 @@ class AlienInvasion:
             self._check_events()    # одно нажатие клавиши
             self._check_continuous_move()    # неприрывное нажатие клавиш
             # self._check_move_mouse()    # движение курсора мышки
-            self.bullets.update()
-            # удаление снарядов вышедших за край экрана
-            for bullet in self.bullets.copy():
-                if bullet.rect.bottom <= 0:
-                    self.bullets.remove(bullet)
-
+            self._update_bullets()
             self._update_screen()    # при каждом прохождении цикла перерисовывается экран
 
 
